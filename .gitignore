@@ -1,0 +1,22 @@
+# macOS
+.DS_Store
+
+# Per-developer local Claude Code config (permissions allowlist, etc.)
+# Note: this repo is loaded as a plugin via `claude --plugin-dir .`,
+# so the plugin loader reads from root skills/, commands/, agents/, hooks/, scripts/ —
+# NOT from .claude/. The .claude/ directory is only for the contributor's own
+# Claude Code session settings while developing the plugin.
+.claude/settings.local.json
+
+# Misc local artifacts
+.test-write
+
+# Telemetry log written by scripts/post-observe.sh (PostToolUse hook)
+docs/agent-telemetry.jsonl
+
+# 同步机器状态（F005）：影子副本与并发锁。丢失无害 —— 退化为一次全量对账
+.harness/
+
+# Python helper runtime artifacts
+__pycache__/
+*.pyc

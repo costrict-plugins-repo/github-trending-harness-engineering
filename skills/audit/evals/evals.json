@@ -1,0 +1,19 @@
+{
+  "skill_name": "harness:audit",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "workflow-cleanup-audit",
+      "type": "functional",
+      "prompt": "Audit an existing repo: PostToolUse formatter only exits 0, no Stop, working precommit/CI tests, CLAUDE.md 85 lines, no observed task failures or host cost data. Findings/priorities only.",
+      "expected_output": "Evidence-based scoped behavior with preserved permissions, real implemented interfaces and disclosed unknowns.",
+      "files": [],
+      "assertions": [
+        "Identifies the no-op as no verification",
+        "Does not rank hook absence/line count alone as a defect",
+        "Preserves working precommit/CI",
+        "Unavailable host costs remain unknown"
+      ]
+    }
+  ]
+}

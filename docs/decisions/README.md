@@ -1,0 +1,20 @@
+# 架构决策索引
+
+| 编号 | 标题 | 状态 | 日期 |
+|------|------|------|------|
+| 0001 | 采用 Skill-based 架构 | 已采纳 | 2026-04 |
+| 0002 | 多语言模板策略 | 已采纳 | 2026-04 |
+| 0003 | 项目自举（Dogfooding） | 已采纳 | 2026-04 |
+| 0004 | skill-creator 作为 Skill 开发唯一方法论 | 已采纳 | 2026-04 |
+| 0005 | 工具无关架构 — AGENTS.md 作为通用记忆文件 | Superseded by 0007 | 2026-04-08 |
+| 0006 | Harness 组件评价体系（HEval） | 已采纳（设计阶段） | 2026-05-03 |
+| 0007 | Claude Code Only — 移除工具无关兼容层 | 已采纳 | 2026-05-23 |
+| 0008 | Vendor superpowers v5.1.0 | 已采纳 | 2026-05-23 |
+| 0009 | harness-delta sidecar 4 文件结构约定 | 已采纳（2026-08-22 修订：4 文件 + 上游 companion 文件） | 2026-05-23 |
+| 0010 | 元技能 SessionStart 注入 | Superseded by 0014 | 2026-05-25 |
+| 0011 | features.json 字段所有权与 schema 2.1 | 提议中 | 2026-08-22 |
+| 0012 | features.json 的规范位置为仓库根目录 | 已采纳 | 2026-08-22 |
+
+- [0013 Claude/Codex adapters (accepted)](0013-claude-codex-adapters.md)
+
+- [0014 Evidence-based workflow cleanup (accepted)](0014-evidence-based-workflow-cleanup.md)

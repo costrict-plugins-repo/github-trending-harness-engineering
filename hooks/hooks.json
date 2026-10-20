@@ -1,0 +1,43 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'exec \"${CLAUDE_PLUGIN_ROOT:-.}/scripts/session-start\" \"$@\"' --"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'exec \"${CLAUDE_PLUGIN_ROOT:-.}/scripts/stop-typecheck\" \"$@\"' --"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'exec \"${CLAUDE_PLUGIN_ROOT:-.}/scripts/stop-sync-issues\" \"$@\"' --"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Read|Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'exec \"${CLAUDE_PLUGIN_ROOT:-.}/scripts/pre-protect-env\" \"$@\"' --"
+          }
+        ]
+      }
+    ]
+  }
+}

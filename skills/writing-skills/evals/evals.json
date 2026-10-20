@@ -1,0 +1,133 @@
+{
+  "skill_name": "harness:writing-skills",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "vendored-skill-has-4-file-structure",
+      "type": "behavior",
+      "rule_under_test": "A new vendored skill must produce the 4 harness files (SKILL.md + harness-delta.md + UPSTREAM.md + evals/evals.json) AND carry over every upstream companion file byte-for-byte",
+      "prompt": "Author a new harness-vendored skill 'foo-bar' that forks from a hypothetical upstream skill 'foo-bar' in superpowers v6.4. Upstream ships foo-bar/SKILL.md plus foo-bar/helper-prompt.md and foo-bar/scripts/run.sh.",
+      "expected_output": "Skill creates skills/foo-bar/{SKILL.md, harness-delta.md, UPSTREAM.md, evals/evals.json} and also copies helper-prompt.md and scripts/run.sh verbatim. SKILL.md is upstream-verbatim with only the 2 allowed edits; the companions get zero edits. UPSTREAM.md lists the companion files.",
+      "files": [],
+      "assertions": [
+        {
+          "name": "4 harness files created",
+          "check": "SKILL.md, harness-delta.md, UPSTREAM.md and evals/evals.json all exist under skills/foo-bar/."
+        },
+        {
+          "name": "companions carried over",
+          "check": "helper-prompt.md and scripts/run.sh exist under skills/foo-bar/ and are unmodified copies of upstream."
+        },
+        {
+          "name": "companions listed in UPSTREAM.md",
+          "check": "UPSTREAM.md names helper-prompt.md and scripts/run.sh under its vendored-companions inventory."
+        },
+        {
+          "name": "SKILL.md name namespaced",
+          "check": "SKILL.md frontmatter name starts with 'harness:'."
+        },
+        {
+          "name": "UPSTREAM.md has SHA",
+          "check": "UPSTREAM.md contains a 40-character hex SHA, not a placeholder."
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "harness-original-skill-uses-2-file-structure",
+      "type": "behavior",
+      "rule_under_test": "A new harness-original skill (no upstream) must use the 2-file structure (SKILL.md + evals/evals.json)",
+      "prompt": "Author a new harness-original skill 'project-status-report' that summarizes features.json state.",
+      "expected_output": "Skill creates 2 files: skills/project-status-report/SKILL.md and skills/project-status-report/evals/evals.json. Does NOT create harness-delta.md or UPSTREAM.md (those are vendored-only).",
+      "files": [],
+      "assertions": [
+        {
+          "name": "exactly 2 entries",
+          "check": "Directory listing shows exactly SKILL.md and evals/."
+        },
+        {
+          "name": "no UPSTREAM.md",
+          "check": "skills/project-status-report/UPSTREAM.md does not exist."
+        },
+        {
+          "name": "no harness-delta.md",
+          "check": "skills/project-status-report/harness-delta.md does not exist."
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "eval_name": "blocks-commit-without-evals",
+      "type": "pressure",
+      "rule_under_test": "Per ADR-0004, a SKILL.md change without corresponding evals/evals.json must be blocked",
+      "prompt": "I want to commit a tweak to skills/audit/SKILL.md to add a new behavior. I don't need to update evals — the change is small.",
+      "expected_output": "Skill refuses to commit without an evals/evals.json update. Cites ADR-0004. Explains the workflow.",
+      "files": [
+        "docs/decisions/0004-skill-creator-methodology.md"
+      ],
+      "assertions": [
+        {
+          "name": "commit blocked",
+          "check": "Skill does not commit the SKILL.md change."
+        },
+        {
+          "name": "ADR-0004 cited",
+          "check": "Output references ADR-0004 by number."
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "eval_name": "line-cap-does-not-apply-to-vendored-skill-md",
+      "type": "pressure",
+      "rule_under_test": "The ≤500-line SKILL.md cap is a harness-original rule; trimming a vendored SKILL.md would break the ADR-0009 verbatim guarantee",
+      "prompt": "skills/writing-skills/SKILL.md is 681 lines, which blows past our 500-line limit in CLAUDE.md. Trim it down — cut the sections we don't use, like the persuasion research and the Codex/Gemini notes.",
+      "expected_output": "Skill refuses to edit the vendored SKILL.md body. Explains that it is upstream-verbatim per ADR-0009 (only 2 edits allowed), that the 500-line cap applies to harness-original skills, and that trimming would turn every future sync into a manual merge. Offers the legitimate alternatives: record a deliberate non-adoption in UPSTREAM.md, or raise it upstream.",
+      "files": [
+        "docs/decisions/0009-harness-delta-sidecar.md",
+        "CLAUDE.md"
+      ],
+      "assertions": [
+        {
+          "name": "refuses the edit",
+          "check": "No content is removed from skills/writing-skills/SKILL.md."
+        },
+        {
+          "name": "cites ADR-0009",
+          "check": "Output references ADR-0009 or the 2-allowed-edits rule by name."
+        },
+        {
+          "name": "scopes the line cap correctly",
+          "check": "Output states the 500-line cap applies to harness-original skills, not vendored ones."
+        },
+        {
+          "name": "offers the real alternative",
+          "check": "Output points to UPSTREAM.md non-adoption notes or an upstream change as the correct path."
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "eval_name": "uses-sdo-not-cso-terminology",
+      "type": "behavior",
+      "rule_under_test": "v6.3.0 renamed Claude Search Optimization (CSO) to Skill Discovery Optimization (SDO); new harness docs use SDO",
+      "prompt": "Explain how to write the description field for a new harness skill so other agents actually find it, and name the technique.",
+      "expected_output": "Skill explains that description states triggering conditions only and never summarizes the workflow, and names the technique Skill Discovery Optimization (SDO). It does not call it Claude Search Optimization / CSO.",
+      "files": [],
+      "assertions": [
+        {
+          "name": "SDO used",
+          "check": "Output uses 'Skill Discovery Optimization' or 'SDO'."
+        },
+        {
+          "name": "CSO not used",
+          "check": "Output does not use 'Claude Search Optimization' or 'CSO' as the current name."
+        },
+        {
+          "name": "substance correct",
+          "check": "Output states the description must not summarize the skill's process or workflow."
+        }
+      ]
+    }
+  ]
+}

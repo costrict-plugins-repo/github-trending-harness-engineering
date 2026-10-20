@@ -1,0 +1,36 @@
+{
+  "name": "harness",
+  "version": "2.4.0",
+  "description": "Harness Engineering: 19 shared workflow skills, Claude Code and Codex adapters, Superpowers 6.4.2 provenance and GPT-6 workflow guidance",
+  "homepage": "https://github.com/huangbaixun/harness-engineering",
+  "repository": "https://github.com/huangbaixun/harness-engineering",
+  "author": {
+    "name": "Harness Engineering",
+    "url": "https://github.com/huangbaixun/harness-engineering"
+  },
+  "license": "MIT",
+  "keywords": [
+    "harness",
+    "agent",
+    "claude-code",
+    "engineering",
+    "ai-engineering",
+    "devops",
+    "team",
+    "sprint"
+  ],
+  "userConfig": {
+    "team_name": {
+      "type": "string",
+      "title": "Team name",
+      "description": "Team name (used in sprint reports and features.json labels, e.g. 'Backend Team')",
+      "sensitive": false
+    },
+    "default_tech_stack": {
+      "type": "string",
+      "title": "Default tech stack",
+      "description": "Default tech stack (typescript / python / go / java / generic) \u2014 auto-selects template during project init",
+      "sensitive": false
+    }
+  }
+}

@@ -1,0 +1,4 @@
+#!/bin/bash
+# Explicit context preview; no unconditional baseline, commit or sync.
+set -euo pipefail
+exec python3 .claude/harness/scripts/claude_hook.py session-start

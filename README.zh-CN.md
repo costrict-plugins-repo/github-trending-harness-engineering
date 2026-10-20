@@ -1,0 +1,204 @@
+# Harness Engineering Plugin
+
+[![Version](https://img.shields.io/badge/version-v2.3.0-blue)](CHANGELOG.md)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%89%A51.0.0-orange)](https://docs.claude.com)
+
+**把工程师的核心工作从「编写代码」转变为「设计让 AI 智能体可靠工作的环境」。**
+
+Harness Engineering Plugin 将这套方法论落地为可直接使用的 Skills、Commands 和 Agents——安装即用，无需额外配置。
+
+## Codex 本地接入（v2.3.0）
+
+需要 Python 3.10+，开发与测试仅使用标准库。在框架仓库中预览并接入：
+
+```bash
+python3 scripts/harness_init.py --tool codex --project ../my-project --dry-run --adopt-existing
+python3 scripts/harness_init.py --tool codex --project ../my-project --adopt-existing
+```
+
+项目交付将 19 个技能放入 `.agents/skills/<name>`，配套资源放入 `.agents/harness`；AGENTS 托管段之外的既有规则保留。任何资源或配置冲突均在写入前报出，更新应审阅差异，不覆盖既有设置。默认关闭 GitHub 同步和自动提交。在 `.harness/config.json` 配置 argv 数组形式的检查命令后运行：
+
+```bash
+python3 .agents/harness/scripts/codex_hook.py verify --project .
+python3 .agents/harness/scripts/harness_state.py checkpoint --project . --task F001 --next-action "执行检查"
+```
+
+另一种方式是 `--delivery plugin`，通过 Codex 原生本地插件流程加载本仓库；两种技能入口择一。Codex manifest 独立选择 `hooks/codex.json`，通过 `/hooks` 审阅信任；项目技能不会自动注册 hooks，不写全局配置。Claude 的命令与 agent 模型声明仍属 Claude 专用。详见[能力矩阵](docs/platform-capabilities.md)、[Codex 适配](references/platforms/codex.md)和 [GPT-6 工作流](references/gpt6-workflows.md)。
+
+卸载项目交付时，先审阅再移除生成的 `.agents/harness`、`.agents/skills/<name>`、AGENTS 托管段和 `.harness/config.json`，保留自己的规则、features 与进度。插件交付通过宿主 UI 卸载。旧 `docs/claude-progress.json` 仅作为只读回退，新检查点使用 `docs/harness-progress.json`。
+
+统一验证：`python3 scripts/validate.py`。实际评估及未验证能力见[评估报告](docs/evals/2026-10-05-codex-adaptation-report.md)。
+
+---
+
+## 快速上手
+
+**第一步：安装**
+
+**方式 A — Marketplace 订阅（推荐，自动更新）**
+
+在 Claude Code 对话中运行：
+
+```
+/plugin marketplace add https://raw.githubusercontent.com/huangbaixun/harness-engineering/main/.claude-plugin/marketplace.json
+```
+
+订阅后从列表中选择安装，新版本发布时 Claude Code 自动提示更新。
+
+**方式 B — 从 GitHub 克隆本地加载**
+
+```bash
+git clone https://github.com/huangbaixun/harness-engineering.git
+claude --plugin-dir ./harness-engineering
+```
+
+适合想先本地验证再决定是否长期使用的场景。
+
+**方式 C — 官方 Marketplace（即将上线）**
+
+```bash
+# 待 Anthropic 审核通过后可用
+claude plugins add harness-engineering
+```
+
+或在 Cowork 中搜索「Harness Engineering」点击安装。
+
+**第二步：初始化新项目**
+
+在 Claude Code 中说：
+
+> 「帮我初始化这个项目的 Harness」
+
+初始化完成后，你的项目会获得：
+
+| 文件 | 作用 |
+|------|------|
+| `CLAUDE.md` | 项目记忆层（≤60 行），唯一真相来源 |
+| `init.sh` | 会话启动脚本，每次新会话前运行 |
+| `.claude/settings.json` | 权限控制 + Hook 注册（含 SessionStart） |
+| `.claude/hooks/session-start.sh` | SessionStart Hook：会话开启时恢复进度上下文 |
+| `.claude/hooks/` | 类型检查、.env 保护、自动格式化 |
+| `.claude/skills/writing-plans/` | 实现前规划 Skill（>30 分钟或 3+ 文件时触发） |
+| `.claude/skills/test-driven-development/` | TDD Skill（RED→GREEN→REFACTOR 强制循环） |
+| `.claude/skills/verification-before-completion/` | 完成前验证 Skill（声明 done 前四层检查） |
+| `docs/architecture.md` | 架构图，Agent 的空间感知文档 |
+| `docs/claude-progress.json` | 跨会话进度追踪 |
+
+验证就绪：`bash init.sh`，看到「Harness 就绪 ✓」即可开始使用。
+
+**第三步：持续受益**
+
+SessionStart Hook 每次会话开启自动恢复进度上下文。harness:writing-plans / harness:test-driven-development / harness:verification-before-completion 三个工作流 Skill 在实现阶段自动介入，确保规划→实现→验证完整闭环。Commands 支持随时触发审计、PR 审查和代码熵增检测。
+
+---
+
+## 核心 Skills
+
+安装后，以下 Skill 根据你的意图自动触发，无需记忆命令名。所有 Skill 统一使用 `harness:` 命名空间：
+
+| Skill | 触发场景 | 做什么 |
+|-------|---------|--------|
+| **harness:init** | 新项目 / 「帮我搭建 Harness」 | 生成完整六层 Harness 结构（CLAUDE.md + Hooks + 模板） |
+| **harness:audit** | 「Agent 老是犯同样的错」/ 存量项目审计 | 七维度健康评分 + 优先级修复方案 |
+| **harness:evolve** | 「CLAUDE.md 太长了」/ 新模型发布后 | 记忆文件瘦身 + Hooks 适配 + 垃圾回收 |
+| **harness:using-harness** | 相关工作流的意图路由 | 意图识别，确保上述 Skill 被正确触发 |
+| **harness:writing-plans** | 实现新功能 / 修 Bug（>30 分钟或涉及 3+ 文件） | 拆解为可验证任务块，`<action>/<verify>/<done>` 三段式结构 |
+| **harness:canary** | 准备部署 / 发布规划 | 基于风险评分的灰度发布 Runbook，含分阶段流量切换、回滚触发条件、可观测性清单 |
+| **harness:archive** | 特性完成后归档 | Spec 归档至 `docs/archive/`、文档一致性检查、架构快检 |
+| **harness:test-driven-development** | 行为实现与错误修复 | 强制 RED→GREEN→REFACTOR 循环，先写测试再写实现 |
+| **harness:verification-before-completion** | 准备声明任务完成前 | 四层检查（Functional / Quality / Architecture / Integration） |
+| **harness:brainstorming** | 新功能 / 设计任务 | 把想法落到 `docs/specs/` 的设计 spec，按 features.json/ADR 关联门禁后再交给 writing-plans |
+| **harness:executing-plans** | plan 已写、准备执行 | 从 `docs/plans/` 读 plan 一任务一任务执行，遇到 out_of_scope 阻塞 |
+| **harness:subagent-driven-development** | 计划含独立任务 | 每任务派发新 subagent，两阶段 review |
+| **harness:dispatching-parallel-agents** | 2+ 个独立并行任务 | 并行派发时尊重架构层依赖 + features.json 归属 |
+| **harness:using-git-worktrees** | 需要隔离工作区 | 按 `feature/<features.json-id>` 命名约定创建 worktree |
+| **harness:systematic-debugging** | 出现 bug / 异常行为 | 调试笔记落 `docs/incidents/`，检查 ADR 假设是否被破坏，生产事故提示 canary |
+| **harness:receiving-code-review** | 收到 review 反馈 | 涉及 rigid 约束的反馈与 features.json 对账；架构反馈 → ADR |
+| **harness:requesting-code-review** | 准备请评审 | 评审前自检（rigid 约束已满足）；PR 描述含 `feature: <id>` |
+| **harness:finishing-a-development-branch** | 实现完成 | 拥有 `building → done` 状态转换；强制调 `harness:archive`；触碰部署面则提示 canary |
+| **harness:writing-skills** | 写/改 skill | 强制 ADR-0004（evals）+ ADR-0009（4 文件 vs 2 文件结构） |
+
+---
+
+## Slash Commands
+
+| Command | 功能 | 推荐频率 |
+|---------|------|---------|
+| `/harness:init` | 初始化 Harness | 项目启动 |
+| `/harness:audit` | Harness 健康度审计 | 按需 |
+| `/harness:assign` | Sprint feature 分配规划，自动算依赖 + 生成认领脚本 | Sprint 开始时 |
+| `/harness:canary` | 生成灰度发布 Runbook（含风险评估） | 部署前 |
+| `/harness:review-pr` | PR 全面审查（质量 + 安全 + 架构） | 每次 PR |
+| `/harness:dump` | 保存会话进度到 claude-progress.json | 上下文 50% 时 |
+| `/harness:sync-docs` | 文档与代码一致性检查 | 每日 |
+| `/harness:scan-arch` | 架构健康度扫描 | 每周 |
+| `/harness:trim` | 精简 CLAUDE.md 至 60 行以内 | 新模型发布后 |
+| `/harness:scan-entropy` | 死代码 + 重复实现 + 过度耦合检测 | 每月 |
+
+---
+
+## Agents
+
+| Agent | 模型 | 用途 |
+|-------|------|------|
+| **security-reviewer** | Opus | 注入漏洞、认证缺陷、secret 泄露 |
+| **code-review-agent** | Sonnet | 架构合规、可维护性、技术债 |
+| **coding-agent** | Sonnet | 长周期多会话编码，跨会话进度交接 |
+| **explore-agent** | Haiku | 代码库探索，保持主线程上下文干净 |
+
+---
+
+## 语言模板
+
+`harness:init` 支持五种技术栈，初始化时自动选择匹配的模板：
+
+- **TypeScript / Node.js** — strict mode, pnpm, Jest/Vitest, Biome/ESLint
+- **Python** — type hints, poetry/uv, pytest, mypy/ruff
+- **Go** — go modules, golangci-lint, testing
+- **Java** — JUnit 5 + Mockito + AssertJ, Maven/Gradle, Checkstyle + SpotBugs
+- **通用** — 语言无关的 Harness 骨架
+
+---
+
+## 平台兼容性
+
+本 plugin 从 v1.9.3 起支持 Windows 跨平台 Hook：
+
+| 特性 | Claude Code | Windows |
+|------|-------------|---------|
+| init.sh 自动检测 | ✅ | ✅（Git Bash） |
+| Skills / Commands | ✅ | ✅ |
+| Hooks（Polyglot 包装器） | ✅ | ✅（Git Bash / MSYS2） |
+
+---
+
+## 项目设计原则
+
+本 plugin 完全自举（dogfooding）——用 Harness Engineering 规范开发 Harness Engineering Plugin 本身：
+
+- `CLAUDE.md` ≤ 60 行，是唯一真相来源
+- `docs/architecture.md` 包含明确的依赖规则
+- `docs/decisions/` 有完整 ADR 记录每个关键决策
+- Hook 脚本遵循「成功静默、失败可见」原则
+- 平台适配层选择宿主路径，共享技能按需加载；ADR-0013 取代 ADR-0007 的 Claude-only 限制
+
+---
+
+## 方法论参考
+
+本 plugin 基于 [Harness Engineering 完整实践手册](references/HarnessEngineering.md) 构建——综合 Anthropic、OpenAI、InfoQ、Hacker News 的一手实践，涵盖长周期任务驾驭架设计、多 Agent 架构、垃圾回收体系等核心模式。
+
+v1.9.2 整合了 [obra/superpowers](https://github.com/obra/superpowers) 的工作流设计思路：writing-plans（实现前规划门禁）、test-driven-development（RED→GREEN→REFACTOR 强制循环）、verification-before-completion（四层完成检查）三个 Skill 直接来源于该项目的核心实践。
+
+多人协作设计参考 [团队并行开发指南](references/team-parallel-development.md)，含 features.json 并行字段设计、Git Worktree 隔离和 Sprint 分配算法。
+
+---
+
+## 参与贡献
+
+欢迎提交新 Skill、语言模板或改进 Hook 脚本。详见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+
+---
+
+[English documentation](README.md)

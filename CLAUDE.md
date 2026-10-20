@@ -1,0 +1,43 @@
+# Harness Engineering Plugin — CLAUDE.md
+
+## Project Overview
+Harness Engineering capability-building plugin: provides a standardized AI Agent Harness engineering framework for new project initialization and existing project optimization.
+
+## Tech Stack
+- Shell scripts (Hook templates and automation scripts)
+- Markdown + JSON (Skills, Commands, configuration templates)
+- Python 3.10+ (helper scripts: health scoring, architecture scanning)
+- Multi-language templates: TypeScript, Python, Go, generic
+
+## Key Commands
+- Full offline validation: `python3 scripts/validate.py`
+
+## Architecture Conventions
+- Dependency direction: references → templates → skills → commands (reverse is prohibited)
+- Every Skill's SKILL.md must include YAML frontmatter (name, description)
+- All Hook scripts must follow the "silent on success, visible on failure" principle
+- Placeholders in template files must use the `{{PLACEHOLDER}}` format
+
+## Mandatory Skill Development Workflow
+Any new or modified Skill must go through the skill-creator workflow — no exceptions:
+1. Draft SKILL.md → 2. Write test cases in the corresponding `evals/evals.json` → 3. Run eval (with-skill vs baseline) → 4. Generate eval-viewer for human review → 5. Iterate based on feedback
+- Eval file location: `skills/<name>/evals/evals.json`, format compatible with skill-creator
+- Directly modifying and committing SKILL.md without eval validation is prohibited
+- See: docs/decisions/0004-skill-creator-methodology.md
+
+## Prohibited Practices
+- Never hardcode specific project names or team information in templates
+- Keep instructions focused; preserve project invariants instead of enforcing a universal line quota
+- Never let Hook templates produce output on success
+- Use progressive disclosure for conditional detail; vendored skills remain upstream-verbatim
+- Never vendor a superpowers skill without `harness-delta.md`, `UPSTREAM.md`, and `evals/evals.json` (see ADR-0009)
+- Never modify a vendored `SKILL.md` body outside the 2 allowed edits (frontmatter `name:` + pointer line)
+
+## Further Context
+- Architecture diagram: docs/architecture.md
+- Design decisions: docs/decisions/
+- Template directory: docs/templates/
+- Methodology reference manual: references/HarnessEngineering.md (primary source)
+- Concept quick reference: references/harness-engineering-handbook.md
+- Current platform decisions: docs/decisions/0013-claude-codex-adapters.md and docs/decisions/0014-evidence-based-workflow-cleanup.md
+- Architecture decisions (superpowers vendor strategy): docs/decisions/0008-vendor-superpowers-v5.md + docs/decisions/0009-harness-delta-sidecar.md

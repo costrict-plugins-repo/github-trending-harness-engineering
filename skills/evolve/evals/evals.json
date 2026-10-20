@@ -1,0 +1,19 @@
+{
+  "skill_name": "harness:evolve",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "workflow-cleanup-evolve",
+      "type": "functional",
+      "prompt": "After a model upgrade, six successful tasks but no security evaluation: review universal 60/300-line and 20k-token quotas, fixed sonnet, forced stop at 50% and duplicate two-phase review. Recommendations only.",
+      "expected_output": "Evidence-based scoped behavior with preserved permissions, real implemented interfaces and disclosed unknowns.",
+      "files": [],
+      "assertions": [
+        "Retires unsupported universal quotas",
+        "Uses checkpoint/native compaction and continues approved work",
+        "Respects host model and consolidates duplicate review",
+        "Retains permissions/security despite small successful sample"
+      ]
+    }
+  ]
+}
